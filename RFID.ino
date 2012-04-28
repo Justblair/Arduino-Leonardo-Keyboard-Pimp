@@ -1,5 +1,5 @@
 // Simple Serial1 Reader
-
+//#define DEBUG
 
 #include <CapSense.h>
 #include <Servo.h>
@@ -15,8 +15,8 @@ Servo Foot1;Servo Foot2;
 
 char code[11];
 // char password[] = "3E00FCD176";
-char password[] = "3E00FCC847";
-char login[] = "3D0061DA2D";
+char* password[] = {"3E00FCC847", "MyPassword"};
+char* login[] = {"3D0061DA2D", "MyLogin"};
 
 
 
@@ -55,33 +55,32 @@ void loop()
 }
 
 void read_capsensor(){
-
+	long total_capsense =  cs_4_2.capSense(100);
+	if (total_capsense > 450){
+		digitalWrite(13, HIGH);
+		Raise_Keyboard(1);
+		last_Time = millis();
+# ifdef DEBUG
+		Serial.println(total_capsense);
+# endif
+	}
 	if (last_Time + wait_time < millis()){
-		long total_capsense =  cs_4_2.capSense(100);
-		if (total_capsense > 450){
-			digitalWrite(13, HIGH);
-			Raise_Keyboard(1);
-			last_Time = millis();
-			Serial.println(total_capsense);
-		}
-		else {
-			digitalWrite(13, LOW);
-			// cs_4_2.reset_CS_AutoCal();
-			Raise_Keyboard(0);  
-		}
-		//last_Time = millis();
+				digitalWrite(13, LOW);
+		Raise_Keyboard(0);
 	}
 }
 
 void check_password(){
-	if (strcmp(code,password) == 0) {
-		Serial.println ("MyPassword");
-		Keyboard.println ("MyPassword");
-		// Raise_Keyboard ();
-	} else 	if (strcmp(code,login) == 0) {
-		Serial.println ("Login");
-		Keyboard.println ("Login Password");
-		// Raise_Keyboard ();
+	if (strcmp(code,password[0]) == 0) {
+#ifdef DEBUG 
+		Serial.println (password[1]); 
+#endif
+		Keyboard.println (password[1]);
+	} else 	if (strcmp(code,login[0]) == 0) {
+#ifdef DEBUG
+		Serial.println (login[1]);
+#endif
+		Keyboard.println (login[1]);
 	} else {
 		Serial.println ("Wrong");
 	}
@@ -104,12 +103,14 @@ void Raise_Keyboard(bool foot_state){
 	if (foot_state == 1){
 		Foot1.write(180);
 		Foot2.write(180);
-		// foot_state = 1;
-		Serial.println("Up");
+# ifdef DEBUG 
+	Serial.println("Up");
+# endif
 	} else {
 		Foot1.write(90);
 		Foot2.write(90);
-		// foot_state = 0;
+# ifdef DEBUG
 		Serial.println("Down");
+# endif
 	}
 }
